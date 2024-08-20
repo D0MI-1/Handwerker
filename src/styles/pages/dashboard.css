@@ -1,0 +1,163 @@
+.dashboard {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+    background-color: #1a1a1a;
+    color: #ffffff;
+    margin: 0;
+    justify-content: flex-start; /* Override global centering */
+    align-items: flex-start; /* Override global centering */
+    overflow: hidden; /* Prevent scrolling on the main container */
+
+}
+
+.main-content {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    height: 100vh; /* Ensure it takes full height */
+}
+
+.sidebar {
+    width: 250px;
+    background-color: #2a2a2a;
+    padding: 20px;
+    height: 100vh; /* Ensure it takes full height */
+    flex-direction: column; /* Stack items vertically */
+    overflow: hidden; /* Ensure content doesn't overflow outside the sidebar */
+
+
+}
+
+/*
+*
+Category buttons
+*
+*/
+.category-items-container {
+    flex-grow: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.category-items {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 10px; /* Add some padding for the scrollbar */
+    margin-top: 20px;
+    max-height: calc(100vh - 190px); /* Make sure this height accounts for any other elements in the sidebar */
+
+}
+
+.category-buttons {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-start;
+    gap: 5px;
+}
+
+.category-btn {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    margin-left: 0;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    color: #ffffff;
+    transition: all 0.3s ease;
+}
+
+.category-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.category-btn.active {
+    background-color:  #3a3a3a;
+}
+
+.category-btn span {
+    margin-left: 5px;
+}
+
+/*
+*
+Searchbar and add item button
+*
+*/
+
+.sidebar-footer {
+    margin-top: auto;
+    width: 100%;
+}
+
+.sidebar-search {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #3a3a3a;
+    border: none;
+    border-radius: 8px;
+    color: #ffffff;
+    margin-right: 5px;
+    box-sizing: border-box;
+
+}
+
+.sidebar-search::placeholder {
+    color: #aaaaaa;
+}
+
+.sidebar-search svg {
+    margin-right: 5px;
+}
+
+.add-item-btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #4a4a4a;
+    border: none;
+    border-radius: 8px;
+    color: #ffffff;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.add-item-btn:hover {
+    background-color: #5a5a5a;
+}
+
+.add-item-btn svg {
+    margin-right: 5px;
+}
+
+
+/*
+*
+Category items
+*
+*/
+
+
+.category-items {
+    margin-top: 20px;
+}
+
+.item {
+    padding: 10px;
+    border-bottom: 1px solid #444;
+    color: #fff;
+    cursor: crosshair;
+    transition: background-color 0.3s ease;
+}
+
+.item:hover {
+    background-color: #3a3a3a;
+}

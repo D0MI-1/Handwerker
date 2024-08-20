@@ -1,0 +1,46 @@
+.baustelle {
+    background-color: #3a3a3a;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.baustelle h2 {
+    margin-top: 0;
+    color: #ffffff;
+}
+
+.baustelle p {
+    color: #cccccc;
+}
+
+.table-container {
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+.baustelle-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #ffffff;
+}
+
+.baustelle-table th,
+.baustelle-table td {
+    border: 1px solid #555;
+    padding: 8px;
+    text-align: left;
+}
+
+.baustelle-table thead {
+    background-color: #2a2a2a;
+}
+
+.baustelle-table tbody tr:nth-child(even) {
+    background-color: #444;
+}
+
+.baustelle-table tfoot {
+    font-weight: bold;
+    background-color: #2a2a2a;
+}
