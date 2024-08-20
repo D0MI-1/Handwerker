@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/components/Baustelle.css';
-import { FaPlus, FaTrash  } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaCopy, FaPaste  } from 'react-icons/fa';
 import AddItemToBaustellePopup from "./AddItemToBaustellePopup";
 import TimeEntryEditor from "./TimeEntryEditor";
 import TimeFrameEditor from "./TimeFrameEditor";
@@ -12,6 +12,7 @@ const Baustelle = ({ name, startDate, endDate, itemsOfBaustelle = [], itemsOfCat
     const [isAddingItem, setIsAddingItem] = useState(false);
     const [editingEntry, setEditingEntry] = useState(null);
     const [deletingItem, setDeletingItem] = useState(null);
+    const [copiedTimeFrame, setCopiedTimeFrame] = useState(null);
 
 
     const handleAddItem = () => {
@@ -38,10 +39,27 @@ const Baustelle = ({ name, startDate, endDate, itemsOfBaustelle = [], itemsOfCat
         setEditingEntry(null);
     };
 
+    const handleCopyTimeFrame = (day, itemId, timeFrame) => {
+        setCopiedTimeFrame({ day, itemId, timeFrame });
+    };
+    const handlePasteTimeFrame = (day, itemId) => {
+        if (copiedTimeFrame && copiedTimeFrame.timeFrame) {
+            const currentTimeFrames = timeEntries[day]?.[itemId] || [];
+            const updatedTimeFrames = [...currentTimeFrames, { ...copiedTimeFrame.timeFrame }];
+            handleTimeFrameUpdate(day, itemId, updatedTimeFrames);
+        }
+    };
+
+    const handleDeleteTimeFrame = (day, itemId, index) => {
+        const currentTimeFrames = timeEntries[day]?.[itemId] || [];
+        const updatedTimeFrames = currentTimeFrames.filter((_, i) => i !== index);
+        handleTimeFrameUpdate(day, itemId, updatedTimeFrames);
+    };
+
     const renderItemAttributes = (item) => {
         switch (selectedCategory) {
             case 'People':
-                return `${item.name}`;
+                return `${item.name} - ${item.position}`;
             case 'Vehicles':
                 return `${item.kennzeichen} - ${item.model}`;
             case 'Machines':
@@ -55,15 +73,41 @@ const Baustelle = ({ name, startDate, endDate, itemsOfBaustelle = [], itemsOfCat
 
     const renderTimeFrames = (day, itemId) => {
         const formattedDay = formatDate(day);
-        const entry = timeEntries[formattedDay] && timeEntries[formattedDay][itemId];
-        if (!entry) return '';
+        const entries = timeEntries[formattedDay]?.[itemId] || [];
 
-        const entries = Array.isArray(entry) ? entry : [entry];
-        return entries.map((timeFrame, index) => (
-            <div key={index}>
-                {timeFrame.startTime} - {timeFrame.endTime}
+        return (
+            <div className="time-frames-container">
+                {entries.map((timeFrame, index) => (
+                    <div key={index} className="time-frame">
+                        <span onClick={() => handleCellClick(day, itemId)}>
+                            {`${timeFrame.startTime} - ${timeFrame.endTime}`}
+                        </span>
+                        <div className="time-frame-actions">
+                            <FaCopy
+                                onClick={() => handleCopyTimeFrame(formattedDay, itemId, timeFrame)}
+                                className="action-icon"
+                                title="Copy time frame"
+                            />
+                            <FaTrash
+                                onClick={() => handleDeleteTimeFrame(formattedDay, itemId, index)}
+                                className="action-icon"
+                                title="Delete time frame"
+                            />
+                        </div>
+                    </div>
+                ))}
+                {copiedTimeFrame && (
+                    <FaPaste
+                        onClick={() => handlePasteTimeFrame(formattedDay, itemId)}
+                        className="paste-icon"
+                        title="Paste copied time frame"
+                    />
+                )}
+                <div className="add-time-frame" onClick={() => handleCellClick(day, itemId)}>
+                    + Add Time Frame
+                </div>
             </div>
-        ));
+        );
     };
 
 
@@ -100,10 +144,7 @@ const Baustelle = ({ name, startDate, endDate, itemsOfBaustelle = [], itemsOfCat
                 <tr key={day.toISOString()}>
                     <td>{formatDate(day)}</td>
                     {itemsOfBaustelle.map(item => (
-                        <td
-                            key={`${day.toISOString()}-${item.id}`}
-                            onClick={() => handleCellClick(day, item.id)}
-                        >
+                        <td key={`${day.toISOString()}-${item.id}`}>
                             {renderTimeFrames(day, item.id)}
                         </td>
                     ))}
@@ -169,10 +210,7 @@ const Baustelle = ({ name, startDate, endDate, itemsOfBaustelle = [], itemsOfCat
                     day={editingEntry.day}
                     itemId={editingEntry.itemId}
                     initialTimeFrames={timeEntries[editingEntry.day]?.[editingEntry.itemId] || []}
-                    onSave={(updatedTimeFrames) => {
-                        onUpdateTimeEntry(editingEntry.day, editingEntry.itemId, updatedTimeFrames);
-                        setEditingEntry(null);
-                    }}
+                    onSave={(updatedTimeFrames) => handleTimeFrameUpdate(editingEntry.day, editingEntry.itemId, updatedTimeFrames)}
                     onCancel={() => setEditingEntry(null)}
                 />
             )}

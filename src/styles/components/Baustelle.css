@@ -44,3 +44,64 @@
     font-weight: bold;
     background-color: #2a2a2a;
 }
+
+.time-frames-container {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 5px;
+}
+
+.time-frame {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #3a3a3a;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.time-frame-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.action-icon, .paste-icon {
+    cursor: pointer;
+    color: #4CAF50;
+    font-size: 14px;
+}
+
+.action-icon:hover, .paste-icon:hover {
+    color: #45a049;
+}
+
+.add-time-frame {
+    color: #4CAF50;
+    cursor: pointer;
+    padding: 5px;
+    text-align: center;
+    border: 1px dashed #4CAF50;
+    border-radius: 4px;
+    margin-top: 5px;
+}
+
+.add-time-frame:hover {
+    background-color: rgba(74, 175, 80, 0.1);
+}
+
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.delete-icon {
+    cursor: pointer;
+    color: #ff4444;
+}
+
+.delete-icon:hover {
+    color: #ff0000;
+}
