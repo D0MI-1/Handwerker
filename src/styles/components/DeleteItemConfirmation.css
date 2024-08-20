@@ -1,0 +1,49 @@
+/* In Baustelle.css */
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.delete-icon {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+    color: #ff4444;
+}
+
+.item-header:hover .delete-icon {
+    opacity: 1;
+}
+
+/* In DeleteItemConfirmation.css */
+.delete-confirmation-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.delete-confirmation-content {
+    background-color: #2a2a2a;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+}
+
+.delete-confirmation-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.delete-button {
+    background-color: #ff4444;
+    color: white;
+}

@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/components/Baustelle.css';
-import { FaPlus } from 'react-icons/fa';
+import { FaPlus, FaTrash  } from 'react-icons/fa';
 import AddItemToBaustellePopup from "./AddItemToBaustellePopup";
 import TimeEntryEditor from "./TimeEntryEditor";
+import TimeFrameEditor from "./TimeFrameEditor";
+import DeleteItemConfirmation from "./DeleteItemConfirmation";
 
-const Baustelle = ({ name, startDate, endDate, itemsOfBaustelle = [], itemsOfCategory, timeEntries = {}, onAddItem, selectedCategory,onUpdateTimeEntry   }) => {
+const Baustelle = ({ name, startDate, endDate, itemsOfBaustelle = [], itemsOfCategory, timeEntries = {}, onAddItem, onRemoveItem, selectedCategory,onUpdateTimeEntry   }) => {
 
-    const days = getDaysBetween(startDate, endDate);
+    const days = selectedCategory !== 'Material' ? getDaysBetween(startDate, endDate) : [];
     const [isAddingItem, setIsAddingItem] = useState(false);
     const [editingEntry, setEditingEntry] = useState(null);
+    const [deletingItem, setDeletingItem] = useState(null);
 
 
     const handleAddItem = () => {
@@ -22,7 +25,7 @@ const Baustelle = ({ name, startDate, endDate, itemsOfBaustelle = [], itemsOfCat
 
 
     const handleCellClick = (day, itemId) => {
-        setEditingEntry({ day, itemId });
+        setEditingEntry({ day: formatDate(day), itemId });
     };
 
     const handleTimeEntryUpdate = (updatedEntry) => {
@@ -30,52 +33,128 @@ const Baustelle = ({ name, startDate, endDate, itemsOfBaustelle = [], itemsOfCat
         setEditingEntry(null);
     };
 
+    const handleTimeFrameUpdate = (day, itemId, timeFrames) => {
+        onUpdateTimeEntry(day, itemId, timeFrames);
+        setEditingEntry(null);
+    };
+
+    const renderItemAttributes = (item) => {
+        switch (selectedCategory) {
+            case 'People':
+                return `${item.name}`;
+            case 'Vehicles':
+                return `${item.kennzeichen} - ${item.model}`;
+            case 'Machines':
+                return `${item.marke} - ${item.model}`;
+            case 'Material':
+                return `${item.hersteller} - ${item.typ}`;
+            default:
+                return item.name;
+        }
+    };
+
+    const renderTimeFrames = (day, itemId) => {
+        const formattedDay = formatDate(day);
+        const entry = timeEntries[formattedDay] && timeEntries[formattedDay][itemId];
+        if (!entry) return '';
+
+        const entries = Array.isArray(entry) ? entry : [entry];
+        return entries.map((timeFrame, index) => (
+            <div key={index}>
+                {timeFrame.startTime} - {timeFrame.endTime}
+            </div>
+        ));
+    };
+
+
+    const renderMaterialList = () => (
+        <div className="material-list">
+            {itemsOfBaustelle.map(item => (
+                <div key={item.id} className="material-item">
+                    {renderItemAttributes(item)}
+                </div>
+            ))}
+            <button className="add-item-to-baustelle-btn" onClick={handleAddItem}>
+                <FaPlus /> Add Material
+            </button>
+        </div>
+    );
+
+    const renderTimeTable = () => (
+        <table className="baustelle-table">
+            <thead>
+            <tr>
+                <th>Date</th>
+                {itemsOfBaustelle.map(item => (
+                    <th key={item.id}>{renderItemHeader(item)}</th>
+                ))}
+                <th>
+                    <button className="add-item-to-baustelle-btn" onClick={handleAddItem}>
+                        <FaPlus />
+                    </button>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            {days.map(day => (
+                <tr key={day.toISOString()}>
+                    <td>{formatDate(day)}</td>
+                    {itemsOfBaustelle.map(item => (
+                        <td
+                            key={`${day.toISOString()}-${item.id}`}
+                            onClick={() => handleCellClick(day, item.id)}
+                        >
+                            {renderTimeFrames(day, item.id)}
+                        </td>
+                    ))}
+                    <td></td>
+                </tr>
+            ))}
+            </tbody>
+            <tfoot>
+            <tr>
+                <td>Total Hours</td>
+                {itemsOfBaustelle.map(item => (
+                    <td key={`total-${item.id}`}>
+                        {calculateTotalHours(item.id, timeEntries)}
+                    </td>
+                ))}
+                <td></td>
+            </tr>
+            </tfoot>
+        </table>
+    );
+
+    const handleDeleteClick = (item) => {
+        setDeletingItem(item);
+    };
+
+    const handleDeleteConfirm = () => {
+        if (deletingItem) {
+            onRemoveItem(selectedCategory, deletingItem);
+            setDeletingItem(null);
+        }
+    };
+
+    const renderItemHeader = (item) => (
+        <div className="item-header">
+            {renderItemAttributes(item)}
+            <FaTrash
+                className="delete-icon"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteClick(item);
+                }}
+            />
+        </div>
+    );
+
     return (
         <div className="baustelle">
             <h2>{name}</h2>
             <p>{formatDate(startDate)} to {formatDate(endDate)}</p>
             <div className="table-container">
-                <table className="baustelle-table">
-                    <thead>
-                    <tr>
-                        <th>Date</th>
-                        {itemsOfBaustelle.map(item => (
-                            <th key={item.id}>{item.name}</th>
-                        ))}
-                        <th>
-                            <button className="add-item-to-baustelle-btn" onClick={handleAddItem}>
-                                <FaPlus />
-                            </button>
-                        </th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {days.map(day => (
-                        <tr key={day}>
-                            <td>{formatDate(day)}</td>
-                            {itemsOfBaustelle.map(item => (
-                                <td
-                                    key={`${day}-${item.id}`}
-                                    onClick={() => handleCellClick(day, item.id)}
-                                    className="time-entry-cell"
-                                >
-                                    {getTimeEntryForDayAndItem(day, item.id, timeEntries)}
-                                </td>
-                            ))}
-                        </tr>
-                    ))}
-                    </tbody>
-                    <tfoot>
-                    <tr>
-                        <td>Total Hours</td>
-                        {itemsOfBaustelle.map(item => (
-                            <td key={`total-${item.id}`}>
-                                {calculateTotalHours(item.id, timeEntries)}
-                            </td>
-                        ))}
-                    </tr>
-                    </tfoot>
-                </table>
+                {selectedCategory === 'Material' ? renderMaterialList() : renderTimeTable()}
             </div>
             {isAddingItem && (
                 <AddItemToBaustellePopup
@@ -86,12 +165,23 @@ const Baustelle = ({ name, startDate, endDate, itemsOfBaustelle = [], itemsOfCat
                 />
             )}
             {editingEntry && (
-                <TimeEntryEditor
+                <TimeFrameEditor
                     day={editingEntry.day}
                     itemId={editingEntry.itemId}
-                    initialEntry={getTimeEntryForDayAndItem(editingEntry.day, editingEntry.itemId, timeEntries)}
-                    onSave={handleTimeEntryUpdate}
+                    initialTimeFrames={timeEntries[editingEntry.day]?.[editingEntry.itemId] || []}
+                    onSave={(updatedTimeFrames) => {
+                        onUpdateTimeEntry(editingEntry.day, editingEntry.itemId, updatedTimeFrames);
+                        setEditingEntry(null);
+                    }}
                     onCancel={() => setEditingEntry(null)}
+                />
+            )}
+            {deletingItem && (
+                <DeleteItemConfirmation
+                    item={deletingItem}
+                    category={selectedCategory}
+                    onConfirm={handleDeleteConfirm}
+                    onCancel={() => setDeletingItem(null)}
                 />
             )}
         </div>
@@ -133,11 +223,15 @@ const calculateTotalHours = (itemId, timeEntries) => {
     let totalMinutes = 0;
     Object.values(timeEntries).forEach(dayEntries => {
         if (dayEntries[itemId]) {
-            const entry = dayEntries[itemId];
-            const [startHour, startMinute] = entry.startTime.split(':').map(Number);
-            const [endHour, endMinute] = entry.endTime.split(':').map(Number);
-            const durationMinutes = (endHour * 60 + endMinute) - (startHour * 60 + startMinute);
-            totalMinutes += durationMinutes;
+            const entries = Array.isArray(dayEntries[itemId]) ? dayEntries[itemId] : [dayEntries[itemId]];
+            entries.forEach(entry => {
+                if (entry && entry.startTime && entry.endTime) {
+                    const [startHour, startMinute] = entry.startTime.split(':').map(Number);
+                    const [endHour, endMinute] = entry.endTime.split(':').map(Number);
+                    const durationMinutes = (endHour * 60 + endMinute) - (startHour * 60 + startMinute);
+                    totalMinutes += durationMinutes;
+                }
+            });
         }
     });
     return (totalMinutes / 60).toFixed(2);

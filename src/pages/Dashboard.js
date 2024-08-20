@@ -175,7 +175,55 @@ const Dashboard = () => {
         }
     };
 
-    const updateTimeEntry = async (baustelleId, updatedEntry) => {
+    const updateTimeEntry = async (baustelleId, day, itemId, timeFrames) => {
+        try {
+            const baustelleRef = doc(db, `users/${user.uid}/baustellen`, baustelleId);
+            const baustelleSnap = await getDoc(baustelleRef);
+
+            if (baustelleSnap.exists()) {
+                const baustelleData = baustelleSnap.data();
+                const updatedTimeEntries = {
+                    ...baustelleData.timeEntries,
+                    [day]: {
+                        ...(baustelleData.timeEntries[day] || {}),
+                        [itemId]: timeFrames
+                    }
+                };
+
+                await updateDoc(baustelleRef, { timeEntries: updatedTimeEntries });
+                fetchBaustellen(); // Refresh the baustellen list
+            } else {
+                console.error("Baustelle document does not exist");
+            }
+        } catch (error) {
+            console.error("Error updating time entry:", error);
+        }
+    };
+
+    const removeItemFromBaustelle = async (baustelleId, category, item) => {
+        try {
+            const baustelleRef = doc(db, `users/${user.uid}/baustellen`, baustelleId);
+            const baustelleSnap = await getDoc(baustelleRef);
+
+            if (baustelleSnap.exists()) {
+                const baustelleData = baustelleSnap.data();
+                const categoryItems = baustelleData[category.toLowerCase()] || [];
+                const updatedItems = categoryItems.filter(i => i.id !== item.id);
+
+                await updateDoc(baustelleRef, {
+                    [category.toLowerCase()]: updatedItems
+                });
+
+                fetchBaustellen(); // Refresh the baustellen list
+            } else {
+                console.error("Baustelle document does not exist");
+            }
+        } catch (error) {
+            console.error("Error removing item from baustelle:", error);
+        }
+    };
+
+    /*const updateTimeEntry = async (baustelleId, updatedEntry) => {
         try {
             const baustelleRef = doc(db, `users/${user.uid}/baustellen`, baustelleId);
             const baustelleSnap = await getDoc(baustelleRef);
@@ -201,7 +249,9 @@ const Dashboard = () => {
         } catch (error) {
             console.error("Error updating time entry:", error);
         }
-    };
+    };*/
+
+
 
     /*const addItem = async (category, item) => {
         const categoryRef = doc(db, `users/${user.uid}/categories`, category);
@@ -238,8 +288,9 @@ const Dashboard = () => {
                             itemsOfCategory={items}
                             timeEntries={baustelle.timeEntries || {}}
                             onAddItem={(item) => addItemToBaustelle(baustelle.id, item)}
+                            onRemoveItem={(category, item) => removeItemFromBaustelle(baustelle.id, category, item)}
                             selectedCategory={selectedCategory}
-                            onUpdateTimeEntry={(updatedEntry) => updateTimeEntry(baustelle.id, updatedEntry)}
+                            onUpdateTimeEntry={(day, itemId, timeFrames) => updateTimeEntry(baustelle.id, day, itemId, timeFrames)}
                         />
                     ))}
                 </div>

@@ -11,6 +11,21 @@ const AddItemToBaustellePopup = ({ items, onSelect, onClose, category }) => {
         onClose();
     };
 
+    const renderItemAttributes = (item) => {
+        switch (category) {
+            case 'People':
+                return `${item.name}`;
+            case 'Vehicles':
+                return `${item.kennzeichen} - ${item.model}`;
+            case 'Machines':
+                return `${item.marke} - ${item.model}`;
+            case 'Material':
+                return `${item.hersteller} - ${item.typ}`;
+            default:
+                return item.name;
+        }
+    };
+
     return (
         <div className="popup-overlay">
             <div className="popup-content">
@@ -23,7 +38,7 @@ const AddItemToBaustellePopup = ({ items, onSelect, onClose, category }) => {
                                 className={`item ${selectedItem === item ? 'selected' : ''}`}
                                 onClick={() => setSelectedItem(item)}
                             >
-                                {item.name}
+                                {renderItemAttributes(item)}
                             </div>
                         ))}
                     </div>
