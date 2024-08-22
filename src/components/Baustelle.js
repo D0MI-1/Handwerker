@@ -235,14 +235,16 @@ const Baustelle = ({
             .reduce((total, item) => total + parseFloat(calculateTotalHours(item.id, timeEntries)), 0);
     };
 
-    const createLexofficeBill = async () => {
-        const LEXOFFICE_API_KEY = process.env.REACT_APP_LEXOFFICE_API_KEY;
-        const LEXOFFICE_API_URL = 'https://api.lexoffice.io/v1/invoices';
+    const createLexofficeBill = async (sendImmediately = false) => {
+        const WORKER_URL = 'https://delicate-rain-e5ee.dominik-urban1.workers.dev/';
 
-        const headers = {
-            'Authorization': `Bearer ${LEXOFFICE_API_KEY}`,
-            'Content-Type': 'application/json'
-        };
+        //const LEXOFFICE_API_KEY = process.env.REACT_APP_LEXOFFICE_API_KEY;
+        //const LEXOFFICE_API_URL = 'https://api.lexoffice.io/v1/invoices';
+
+        //const headers = {
+        //    'Authorization': `Bearer ${LEXOFFICE_API_KEY}`,
+        //    'Content-Type': 'application/json'
+        //};
 
         let remarkText = "Bei Fragen stehen wir Ihnen gerne zur Verfügung.";
         let tax = true;
@@ -315,40 +317,53 @@ const Baustelle = ({
         const totalNetAmount = lineItems.reduce((total, item) => total + item.quantity * item.unitPrice.netAmount, 0);
         const totalGrossAmount = lineItems.reduce((total, item) => total + item.quantity * item.unitPrice.grossAmount, 0);
 
-        const invoiceData = {
-            voucherDate: new Date().toISOString().split('T')[0],
-            address: {
-                name: "Customer Name", // Replace with actual customer name
-                contactId: "10000" // Replace with actual customer contact ID if available
-            },
-            lineItems: lineItems,
-            totalPrice: {
-                currency: "EUR",
-                totalNetAmount: totalNetAmount,
-                totalGrossAmount: totalGrossAmount,
-                totalTaxAmount: totalGrossAmount - totalNetAmount
-            },
-            taxConditions: {
-                taxType: tax ? "net" : "vatfree"
-            },
-            paymentConditions: {
-                paymentTermLabel: "Zahlbar innerhalb von 14 Tagen",
-                paymentTermDuration: 14
-            },
-            title: `Rechnung für Objekt: ${name}`,
-            introduction: "Sehr geehrte Damen und Herren\n\nwir erlauben uns, wie folgt Rechnung zu stellen:",
-            remark: remarkText,
-            customFields: [
-                // Add any custom fields here if needed
-            ]
-        };
-
         try {
-            const response = await axios.post(LEXOFFICE_API_URL, invoiceData, { headers });
+            const invoiceData = {
+                voucherDate: new Date().toISOString().split('T')[0],
+                address: {
+                    name: "Customer Name", // Replace with actual customer name
+                    contactId: "10000" // Replace with actual customer contact ID if available
+                },
+                lineItems: lineItems,
+                totalPrice: {
+                    currency: "EUR",
+                    totalNetAmount: totalNetAmount,
+                    totalGrossAmount: totalGrossAmount,
+                    totalTaxAmount: totalGrossAmount - totalNetAmount
+                },
+                taxConditions: {
+                    taxType: tax ? "net" : "vatfree"
+                },
+                paymentConditions: {
+                    paymentTermLabel: "Zahlbar innerhalb von 14 Tagen",
+                    paymentTermDuration: 14
+                },
+                title: `Rechnung für Objekt: ${name}`,
+                introduction: "Sehr geehrte Damen und Herren\n\nwir erlauben uns, wie folgt Rechnung zu stellen:",
+                remark: remarkText,
+                customFields: [
+                    // Add any custom fields here if needed
+                ]
+            };
+
+            // Create the invoice using your Cloudflare Worker
+            const response = await axios.post(`${WORKER_URL}`, invoiceData);
             console.log('Invoice created successfully:', response.data);
-            // Handle successful invoice creation (e.g., show a success message, update UI)
+
+            if (sendImmediately && response.data.id) {
+                // Finalize and send the invoice using your Cloudflare Worker
+                const finalizeResponse = await axios.post(`${WORKER_URL}/finalize/${response.data.id}`);
+
+                if (finalizeResponse.status === 204) {
+                    console.log('Invoice finalized and sent successfully');
+                    // Handle successful sending (e.g., show a success message, update UI)
+                } else {
+                    console.error('Error finalizing invoice:', finalizeResponse);
+                    // Handle error (e.g., show error message to user)
+                }
+            }
         } catch (error) {
-            console.error('Error creating invoice:', error);
+            console.error('Error creating or sending invoice:', error);
             // Handle error (e.g., show error message to user)
         }
     };
