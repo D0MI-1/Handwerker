@@ -6,6 +6,7 @@ import TimeEntryEditor from "./TimeEntryEditor";
 import TimeFrameEditor from "./TimeFrameEditor";
 import DeleteItemConfirmation from "./DeleteItemConfirmation";
 import EditBaustellePopup from "./EditBaustellePopup";
+import axios from 'axios';
 
 const Baustelle = ({
                        id,
@@ -232,23 +233,128 @@ const Baustelle = ({
         }, 0).toFixed(2);
     };
 
-    const createLexofficeBill = () => {
-        console.log('Creating Lexoffice bill for Baustelle:', {
-            id,
-            name,
-            startDate,
-            endDate,
-            maschinenrate,
-            fahrzeugrate,
-            stundenrate,
-            totalHours: calculateTotalHoursAllItems(),
-            items: itemsOfBaustelle.map(item => ({
-                ...item,
-                totalHours: calculateTotalHours(item.id, timeEntries)
-            }))
-        });
-        console.log('Using Lexoffice API Key:', process.env.LEXOFFICE_API_KEY);
-        // TODO: Implement actual Lexoffice API call here
+    const calculateHoursForPosition = (position) => {
+        return itemsOfBaustelle
+            .filter(item => item.position === position)
+            .reduce((total, item) => total + parseFloat(calculateTotalHours(item.id, timeEntries)), 0);
+    };
+
+    const createLexofficeBill = async () => {
+        const LEXOFFICE_API_KEY = process.env.REACT_APP_LEXOFFICE_API_KEY;
+        const LEXOFFICE_API_URL = 'https://api.lexoffice.io/v1/invoices';
+
+        const headers = {
+            'Authorization': `Bearer ${LEXOFFICE_API_KEY}`,
+            'Content-Type': 'application/json'
+        };
+
+        let remarkText = "Bei Fragen stehen wir Ihnen gerne zur Verfügung.";
+        let tax = true;
+        if (name.substring(0, 2).toUpperCase() === "EP") {
+            remarkText = "Bei den oben genannten Leistungen handelt es sich um Bauleistungen im Sinne § 13b UStG. Es liegt eine Steuerschuldnerschaft des Leistungsempfängers vor.";
+            tax = false;
+        }
+
+        const taxRate = tax ? 19 : 0;
+
+        const polierHours = calculateHoursForPosition("Baustellenleiter (Polier)");
+        const baustellenleiterHours = calculateHoursForPosition("Baustellenleiter");
+        const facharbeiterHours = calculateHoursForPosition("Facharbeiter");
+        const totalHours = calculateTotalHoursAllItems();
+
+        const lineItems = [];
+
+        // Helper function to add Bauarbeiten items only if hours > 0
+        const addBauarbeitenItem = (hours, position) => {
+            if (hours > 0) {
+                lineItems.push({
+                    type: "custom",
+                    name: "Bauarbeiten",
+                    description: `${position}stunden ${hours} Stunden zu ${stundenrate},-€ pro Stunde\n\nZeitraum: ${formatDate(startDate)} bis ${formatDate(endDate)}`,
+                    quantity: hours,
+                    unitName: "Stunden",
+                    unitPrice: {
+                        currency: "EUR",
+                        netAmount: stundenrate,
+                        grossAmount: stundenrate * (1 + taxRate / 100),
+                        taxRatePercentage: taxRate
+                    }
+                });
+            }
+        };
+
+        // Add Bauarbeiten items only if they have non-zero hours
+        addBauarbeitenItem(polierHours, "Baustellenleiter (Polier)");
+        addBauarbeitenItem(baustellenleiterHours, "Baustellenleiter");
+        addBauarbeitenItem(facharbeiterHours, "Facharbeiter");
+
+        // Add Materialtransport and Miete für Maschine items
+        lineItems.push({
+                type: "custom",
+                name: "Materialtransport- Anfahrts- und Lieferkosten",
+                description: `Zeitraum: ${formatDate(startDate)} bis ${formatDate(endDate)}`,
+                quantity: 1,
+                unitName: "Stück",
+                unitPrice: {
+                    currency: "EUR",
+                    netAmount: totalHours * fahrzeugrate,
+                    grossAmount: totalHours * fahrzeugrate * (1 + taxRate / 100),
+                    taxRatePercentage: taxRate
+                }
+            },
+            {
+                type: "custom",
+                name: "Miete für Maschine",
+                description: `Zeitraum: ${formatDate(startDate)} bis ${formatDate(endDate)}`,
+                quantity: 1,
+                unitName: "Stück",
+                unitPrice: {
+                    currency: "EUR",
+                    netAmount: totalHours * maschinenrate,
+                    grossAmount: totalHours * maschinenrate * (1 + taxRate / 100),
+                    taxRatePercentage: taxRate
+                }
+            });
+
+        const totalNetAmount = lineItems.reduce((total, item) => total + item.quantity * item.unitPrice.netAmount, 0);
+        const totalGrossAmount = lineItems.reduce((total, item) => total + item.quantity * item.unitPrice.grossAmount, 0);
+
+        const invoiceData = {
+            voucherDate: new Date().toISOString().split('T')[0],
+            address: {
+                name: "Customer Name", // Replace with actual customer name
+                contactId: "10000" // Replace with actual customer contact ID if available
+            },
+            lineItems: lineItems,
+            totalPrice: {
+                currency: "EUR",
+                totalNetAmount: totalNetAmount,
+                totalGrossAmount: totalGrossAmount,
+                totalTaxAmount: totalGrossAmount - totalNetAmount
+            },
+            taxConditions: {
+                taxType: tax ? "net" : "vatfree"
+            },
+            paymentConditions: {
+                paymentTermLabel: "Zahlbar innerhalb von 14 Tagen",
+                paymentTermDuration: 14
+            },
+            title: `Rechnung für Objekt: ${name}`,
+            introduction: "Sehr geehrte Damen und Herren\n\nwir erlauben uns, wie folgt Rechnung zu stellen:",
+            remark: remarkText,
+            customFields: [
+                // Add any custom fields here if needed
+            ]
+        };
+
+        try {
+            const response = await axios.post(LEXOFFICE_API_URL, invoiceData, { headers });
+            console.log('Invoice created successfully:', response.data);
+            // Handle successful invoice creation (e.g., show a success message, update UI)
+        } catch (error) {
+            console.error('Error creating invoice:', error);
+            // Handle error (e.g., show error message to user)
+        }
     };
 
     const handleDeleteBaustelleClick = () => {
