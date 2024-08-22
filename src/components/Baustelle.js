@@ -347,24 +347,28 @@ const Baustelle = ({
             };
 
             // Create the invoice using your Cloudflare Worker
-            const response = await axios.post(`${WORKER_URL}`, invoiceData);
-            console.log('Invoice created successfully:', response.data);
+            const response = await axios.post(WORKER_URL, invoiceData, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });            console.log('Invoice created successfully:', response.data);
 
             if (sendImmediately && response.data.id) {
-                // Finalize and send the invoice using your Cloudflare Worker
-                const finalizeResponse = await axios.post(`${WORKER_URL}/finalize/${response.data.id}`);
+                const finalizeResponse = await axios.post(`${WORKER_URL}/finalize/${response.data.id}`, null, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
 
                 if (finalizeResponse.status === 204) {
                     console.log('Invoice finalized and sent successfully');
-                    // Handle successful sending (e.g., show a success message, update UI)
-                } else {
-                    console.error('Error finalizing invoice:', finalizeResponse);
-                    // Handle error (e.g., show error message to user)
-                }
+                } 
             }
         } catch (error) {
             console.error('Error creating or sending invoice:', error);
-            // Handle error (e.g., show error message to user)
+
         }
     };
 
