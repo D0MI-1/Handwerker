@@ -56,7 +56,6 @@ const Dashboard = () => {
 
     useEffect(() => {
         if (user) {
-            fetchCategories();
             fetchBaustellen();
         }
     }, [user]);
@@ -67,32 +66,7 @@ const Dashboard = () => {
         }
     }, [user, selectedCategory]);
 
-    const fetchCategories = async () => {
-        // get categories from db of user
-        // wait for data from firebase
-        // transform array of documents into object where the keys are the category types and the values are the items
-        /*
-        .reduce((acc, doc) => { ... }, {});:
-            acc: The accumulator, starting as an empty object {}.
-            doc: Each document snapshot in the array.
-            const { type, items } = doc.data();: Extracts type and items from the document data.
-            acc[type] = items;: Adds items to the accumulator under the key type.
-            return acc;: Returns the accumulator for the next iteration.
-        */
-        try {
-            const categoriesQuery = query(collection(db, `users/${user.uid}/categories`));
-            //const snapshot = await getDocs(categoriesQuery);
-            //const categoriesData = snapshot.docs.reduce((acc, doc) => {
-            //    const { type, items } = doc.data();
-            //   acc[type] = items;
-            //    return acc;
-            //}, {});
 
-        } catch (error) {
-            console.error("Error fetching categories:", error);
-            // Handle the error
-        }
-    };
 
     const fetchItemsForCategory = async (category) => {
         try {
