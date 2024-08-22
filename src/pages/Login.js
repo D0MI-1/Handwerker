@@ -3,6 +3,8 @@ import {auth} from '../firebase/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/pages/signup_Login.css'
+import AuthWrapper from '../components/AuthWrapper';
+
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -19,6 +21,8 @@ const Login = () => {
     };
 
     return (
+        <AuthWrapper>
+
         <div className="login-container">
             <h1>Mauerwerk</h1>
             <form onSubmit={handleLogin}>
@@ -45,6 +49,8 @@ const Login = () => {
                 <button className="signup-button">sign up</button>
             </Link>
         </div>
+        </AuthWrapper>
+
     );
 };
 

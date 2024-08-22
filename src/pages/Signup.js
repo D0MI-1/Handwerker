@@ -4,6 +4,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { setDoc, doc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import '../styles/pages/signup_Login.css'
+import AuthWrapper from '../components/AuthWrapper';
 
 const Signup = () => {
     const [email, setEmail] = useState('');
@@ -30,6 +31,8 @@ const Signup = () => {
     };
 
     return (
+        <AuthWrapper>
+
         <div className="signup-container">
             <h1>Sign Up for Mauerwerk</h1>
             <form onSubmit={handleSignup}>
@@ -50,6 +53,8 @@ const Signup = () => {
                 <button type="submit" className="submit-button">Sign Up</button>
             </form>
         </div>
+        </AuthWrapper>
+
     );
 };
 
