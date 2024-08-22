@@ -11,7 +11,8 @@ import '../styles/pages/dashboard.css'
 const Dashboard = () => {
     const [user] = useAuthState(auth);
 
-    const [categories, _setCategories] = useState(['People', 'Machines', 'Vehicles', 'Material']);
+    //_setCategories
+    const [categories, ] = useState(['People', 'Machines', 'Vehicles', 'Material']);
     const [selectedCategory, setSelectedCategory] = useState('People');
 
     const [items, setItems] = useState([]);
@@ -19,8 +20,10 @@ const Dashboard = () => {
     const [baustellen, setBaustellen] = useState([]);
     const [isAddBaustellePopupOpen, setIsAddBaustellePopupOpen] = useState(false);
 
-    const [_baustelleItems, setBaustelleItems] = useState([]);
-    const [_timeEntries, setTimeEntries] = useState([]);
+    //_baustelleItems
+    const [, setBaustelleItems] = useState([]);
+    //_timeEntries
+    const [, setTimeEntries] = useState([]);
 
     const fetchBaustelleItems = async () => {
         // Fetch items associated with this Baustelle
