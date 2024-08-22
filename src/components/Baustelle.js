@@ -1,18 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/components/Baustelle.css';
-import { FaPlus, FaTrash, FaCopy, FaPaste  } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaCopy, FaPaste, FaEdit, FaFileInvoiceDollar   } from 'react-icons/fa';
 import AddItemToBaustellePopup from "./AddItemToBaustellePopup";
 import TimeEntryEditor from "./TimeEntryEditor";
 import TimeFrameEditor from "./TimeFrameEditor";
 import DeleteItemConfirmation from "./DeleteItemConfirmation";
+import EditBaustellePopup from "./EditBaustellePopup";
 
-const Baustelle = ({ name, startDate, endDate, itemsOfBaustelle = [], itemsOfCategory, timeEntries = {}, onAddItem, onRemoveItem, selectedCategory,onUpdateTimeEntry   }) => {
-
+const Baustelle = ({
+                       id,
+                       name,
+                       startDate,
+                       endDate,
+                       maschinenrate,
+                       fahrzeugrate,
+                       stundenrate,
+                       itemsOfBaustelle = [],
+                       itemsOfCategory,
+                       timeEntries = {},
+                       onAddItem,
+                       onRemoveItem,
+                       selectedCategory,
+                       onUpdateTimeEntry,
+                       onUpdateBaustelle,
+                       onDeleteBaustelle
+                   }) => {
     const days = selectedCategory !== 'Material' ? getDaysBetween(startDate, endDate) : [];
     const [isAddingItem, setIsAddingItem] = useState(false);
     const [editingEntry, setEditingEntry] = useState(null);
     const [deletingItem, setDeletingItem] = useState(null);
     const [copiedTimeFrame, setCopiedTimeFrame] = useState(null);
+    const [isEditingBaustelle, setIsEditingBaustelle] = useState(false);
+    const [isDeletingBaustelle, setIsDeletingBaustelle] = useState(false);
 
 
     const handleAddItem = () => {
@@ -160,7 +179,7 @@ const Baustelle = ({ name, startDate, endDate, itemsOfBaustelle = [], itemsOfCat
                         {calculateTotalHours(item.id, timeEntries)}
                     </td>
                 ))}
-                <td></td>
+                <td>{calculateTotalHoursAllItems()}</td>
             </tr>
             </tfoot>
         </table>
@@ -190,10 +209,73 @@ const Baustelle = ({ name, startDate, endDate, itemsOfBaustelle = [], itemsOfCat
         </div>
     );
 
+    const handleEditBaustelle = () => {
+        setIsEditingBaustelle(true);
+    };
+
+    const handleUpdateBaustelle = (updatedBaustelle) => {
+        onUpdateBaustelle(id, updatedBaustelle);
+        setIsEditingBaustelle(false);
+    };
+
+    const calculateTotalHoursAllItems = () => {
+        return Object.values(timeEntries).reduce((total, dayEntries) => {
+            itemsOfBaustelle.forEach(item => {
+                const itemEntries = dayEntries[item.id] || [];
+                itemEntries.forEach(entry => {
+                    const start = new Date(`2000-01-01T${entry.startTime}`);
+                    const end = new Date(`2000-01-01T${entry.endTime}`);
+                    total += (end - start) / 3600000; // Convert milliseconds to hours
+                });
+            });
+            return total;
+        }, 0).toFixed(2);
+    };
+
+    const createLexofficeBill = () => {
+        console.log('Creating Lexoffice bill for Baustelle:', {
+            id,
+            name,
+            startDate,
+            endDate,
+            maschinenrate,
+            fahrzeugrate,
+            stundenrate,
+            totalHours: calculateTotalHoursAllItems(),
+            items: itemsOfBaustelle.map(item => ({
+                ...item,
+                totalHours: calculateTotalHours(item.id, timeEntries)
+            }))
+        });
+        console.log('Using Lexoffice API Key:', process.env.LEXOFFICE_API_KEY);
+        // TODO: Implement actual Lexoffice API call here
+    };
+
+    const handleDeleteBaustelleClick = () => {
+        setIsDeletingBaustelle(true);
+    };
+
+    const handleDeleteBaustelleConfirm = () => {
+        onDeleteBaustelle(id);
+        setIsDeletingBaustelle(false);
+    };
+
+    const handleDeleteBaustelleCancel = () => {
+        setIsDeletingBaustelle(false);
+    };
+
     return (
         <div className="baustelle">
-            <h2>{name}</h2>
+            <div className="baustelle-header">
+                <h2>{name}</h2>
+                <div className="baustelle-actions">
+                    <FaEdit onClick={handleEditBaustelle} className="edit-icon" title="Edit Baustelle"/>
+                    <FaTrash onClick={handleDeleteBaustelleClick} className="delete-icon-Baustelle" title="Delete Baustelle"/>
+                    <FaFileInvoiceDollar onClick={createLexofficeBill} className="create-bill-icon" title="Create Lexoffice Bill"/>
+                </div>
+            </div>
             <p>{formatDate(startDate)} to {formatDate(endDate)}</p>
+            <p>Maschinenrate: {maschinenrate} | Fahrzeugrate: {fahrzeugrate} | Stundenrate: {stundenrate}</p>
             <div className="table-container">
                 {selectedCategory === 'Material' ? renderMaterialList() : renderTimeTable()}
             </div>
@@ -220,6 +302,21 @@ const Baustelle = ({ name, startDate, endDate, itemsOfBaustelle = [], itemsOfCat
                     category={selectedCategory}
                     onConfirm={handleDeleteConfirm}
                     onCancel={() => setDeletingItem(null)}
+                />
+            )}
+            {isEditingBaustelle && (
+                <EditBaustellePopup
+                    baustelle={{ id, name, startDate, endDate, maschinenrate, fahrzeugrate, stundenrate }}
+                    onSave={handleUpdateBaustelle}
+                    onCancel={() => setIsEditingBaustelle(false)}
+                />
+            )}
+            {isDeletingBaustelle && (
+                <DeleteItemConfirmation
+                    item={{ name }}
+                    category="Baustelle"
+                    onConfirm={handleDeleteBaustelleConfirm}
+                    onCancel={handleDeleteBaustelleCancel}
                 />
             )}
         </div>

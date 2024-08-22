@@ -5,7 +5,10 @@ const AddBaustellePopup = ({ onClose, onConfirm }) => {
     const [formData, setFormData] = useState({
         name: '',
         startDate: '',
-        endDate: ''
+        endDate: '',
+        maschinenrate: '',
+        fahrzeugrate: '',
+        stundenrate: ''
     });
 
     const handleChange = (e) => {
@@ -45,6 +48,30 @@ const AddBaustellePopup = ({ onClose, onConfirm }) => {
                     name="endDate"
                     value={formData.endDate}
                     onChange={handleChange}
+                    required
+                />
+                <input
+                    type="number"
+                    name="maschinenrate"
+                    value={formData.maschinenrate}
+                    onChange={handleChange}
+                    placeholder="Maschinenrate"
+                    required
+                />
+                <input
+                    type="number"
+                    name="fahrzeugrate"
+                    value={formData.fahrzeugrate}
+                    onChange={handleChange}
+                    placeholder="Fahrzeugrate"
+                    required
+                />
+                <input
+                    type="number"
+                    name="stundenrate"
+                    value={formData.stundenrate}
+                    onChange={handleChange}
+                    placeholder="Stundenrate"
                     required
                 />
                 <div className="popup-buttons">

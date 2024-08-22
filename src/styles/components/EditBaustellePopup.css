@@ -1,0 +1,52 @@
+.edit-baustelle-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.edit-baustelle-popup {
+    background-color: #2a2a2a;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+}
+
+.edit-baustelle-popup h2 {
+    color: #ffffff;
+    margin-top: 0;
+}
+
+.edit-baustelle-popup input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #444;
+    background-color: #333;
+    color: #fff;
+    box-sizing: border-box;
+}
+
+.popup-buttons {
+    display: flex;
+    justify-content: space-between;
+}
+
+.popup-buttons button {
+    margin-left: 10px;
+    padding: 5px 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.popup-buttons button:hover {
+    background-color: #45a049;
+}

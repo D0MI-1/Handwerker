@@ -97,11 +97,26 @@
     align-items: center;
 }
 
-.delete-icon {
+.delete-icon-Baustelle {
     cursor: pointer;
     color: #ff4444;
+    margin-left: 10px;
 }
 
-.delete-icon:hover {
+.delete-icon-Baustelle:hover {
     color: #ff0000;
+}
+
+.edit-icon{
+    cursor: pointer;
+}
+
+.create-bill-icon {
+    cursor: pointer;
+    margin-left: 10px;
+    color: #4CAF50;
+}
+
+.create-bill-icon:hover {
+    color: #45a049;
 }

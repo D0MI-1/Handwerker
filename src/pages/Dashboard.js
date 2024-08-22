@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, addDoc, updateDoc, doc, getDoc } from 'firebase/firestore';
+import { collection, query, getDocs, addDoc, updateDoc, doc, getDoc, deleteDoc  } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db } from '../firebase/firebase';
 import Sidebar from '../components/Sidebar';
@@ -223,6 +223,26 @@ const Dashboard = () => {
         }
     };
 
+    const updateBaustelle = async (baustelleId, updatedBaustelle) => {
+        try {
+            const baustelleRef = doc(db, `users/${user.uid}/baustellen`, baustelleId);
+            await updateDoc(baustelleRef, updatedBaustelle);
+            fetchBaustellen();
+        } catch (error) {
+            console.error("Error updating baustelle:", error);
+        }
+    };
+
+    const deleteBaustelle = async (baustelleId) => {
+        try {
+            const baustelleRef = doc(db, `users/${user.uid}/baustellen`, baustelleId);
+            await deleteDoc(baustelleRef);
+            fetchBaustellen();
+        } catch (error) {
+            console.error("Error deleting baustelle:", error);
+        }
+    };
+
     /*const updateTimeEntry = async (baustelleId, updatedEntry) => {
         try {
             const baustelleRef = doc(db, `users/${user.uid}/baustellen`, baustelleId);
@@ -281,9 +301,13 @@ const Dashboard = () => {
                     {baustellen.map(baustelle => (
                         <Baustelle
                             key={baustelle.id}
+                            id={baustelle.id}
                             name={baustelle.name}
                             startDate={baustelle.startDate}
                             endDate={baustelle.endDate}
+                            maschinenrate={baustelle.maschinenrate}
+                            fahrzeugrate={baustelle.fahrzeugrate}
+                            stundenrate={baustelle.stundenrate}
                             itemsOfBaustelle={baustelle[selectedCategory.toLowerCase()] || []}
                             itemsOfCategory={items}
                             timeEntries={baustelle.timeEntries || {}}
@@ -291,6 +315,8 @@ const Dashboard = () => {
                             onRemoveItem={(category, item) => removeItemFromBaustelle(baustelle.id, category, item)}
                             selectedCategory={selectedCategory}
                             onUpdateTimeEntry={(day, itemId, timeFrames) => updateTimeEntry(baustelle.id, day, itemId, timeFrames)}
+                            onUpdateBaustelle={updateBaustelle}
+                            onDeleteBaustelle={deleteBaustelle}
                         />
                     ))}
                 </div>
