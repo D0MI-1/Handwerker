@@ -11,7 +11,7 @@ import '../styles/pages/dashboard.css'
 const Dashboard = () => {
     const [user] = useAuthState(auth);
 
-    const [categories, setCategories] = useState(['People', 'Machines', 'Vehicles', 'Material']);
+    const [categories, _setCategories] = useState(['People', 'Machines', 'Vehicles', 'Material']);
     const [selectedCategory, setSelectedCategory] = useState('People');
 
     const [items, setItems] = useState([]);
@@ -19,10 +19,10 @@ const Dashboard = () => {
     const [baustellen, setBaustellen] = useState([]);
     const [isAddBaustellePopupOpen, setIsAddBaustellePopupOpen] = useState(false);
 
-    const [baustelleItems, setBaustelleItems] = useState([]);
-    const [timeEntries, setTimeEntries] = useState([]);
+    const [_baustelleItems, setBaustelleItems] = useState([]);
+    const [_timeEntries, setTimeEntries] = useState([]);
 
-    const fetchBaustelleItems = async (baustelleId) => {
+    const fetchBaustelleItems = async () => {
         // Fetch items associated with this Baustelle
         // This is a placeholder. Implement the actual fetching logic.
         const items = [
@@ -33,7 +33,7 @@ const Dashboard = () => {
         setBaustelleItems(items);
     };
 
-    const fetchTimeEntries = async (baustelleId) => {
+    const fetchTimeEntries = async () => {
         // Fetch time entries for this Baustelle
         // This is a placeholder. Implement the actual fetching logic.
         const entries = [
@@ -78,12 +78,12 @@ const Dashboard = () => {
         */
         try {
             const categoriesQuery = query(collection(db, `users/${user.uid}/categories`));
-            const snapshot = await getDocs(categoriesQuery);
-            const categoriesData = snapshot.docs.reduce((acc, doc) => {
-                const { type, items } = doc.data();
-                acc[type] = items;
-                return acc;
-            }, {});
+            //const snapshot = await getDocs(categoriesQuery);
+            //const categoriesData = snapshot.docs.reduce((acc, doc) => {
+            //    const { type, items } = doc.data();
+            //   acc[type] = items;
+            //    return acc;
+            //}, {});
 
         } catch (error) {
             console.error("Error fetching categories:", error);

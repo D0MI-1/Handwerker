@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { FaUsers, FaCogs, FaTruck, FaBoxes, FaPlus, FaTrash   } from 'react-icons/fa';
+import { FaUsers, FaTruck, FaBoxes, FaPlus, FaTrash   } from 'react-icons/fa';
 import {GiGearHammer} from 'react-icons/gi';
 import AddItemPopup from './AddItemPopup';
 import EditItemPopup from './EditItemPopup';

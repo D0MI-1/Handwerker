@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import '../styles/components/Baustelle.css';
 import { FaPlus, FaTrash, FaCopy, FaPaste, FaEdit, FaFileInvoiceDollar   } from 'react-icons/fa';
 import AddItemToBaustellePopup from "./AddItemToBaustellePopup";
-import TimeEntryEditor from "./TimeEntryEditor";
 import TimeFrameEditor from "./TimeFrameEditor";
 import DeleteItemConfirmation from "./DeleteItemConfirmation";
 import EditBaustellePopup from "./EditBaustellePopup";
@@ -49,10 +48,7 @@ const Baustelle = ({
         setEditingEntry({ day: formatDate(day), itemId });
     };
 
-    const handleTimeEntryUpdate = (updatedEntry) => {
-        onUpdateTimeEntry(updatedEntry);
-        setEditingEntry(null);
-    };
+
 
     const handleTimeFrameUpdate = (day, itemId, timeFrames) => {
         onUpdateTimeEntry(day, itemId, timeFrames);
@@ -443,7 +439,7 @@ const formatDate = (date) => {
     return new Date(date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
 };
 
-const getTimeEntryForDayAndItem = (day, itemId, timeEntries) => {
+/*const getTimeEntryForDayAndItem = (day, itemId, timeEntries) => {
     // Convert the day to a Date object if it's not already
     const dayDate = day instanceof Date ? day : new Date(day);
 
@@ -458,7 +454,7 @@ const getTimeEntryForDayAndItem = (day, itemId, timeEntries) => {
         return `${entry.startTime}-${entry.endTime}`;
     }
     return '';
-};
+};*/
 
 const calculateTotalHours = (itemId, timeEntries) => {
     let totalMinutes = 0;
