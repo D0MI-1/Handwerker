@@ -46,24 +46,22 @@ const Dashboard = () => {
         ];
         setTimeEntries(entries);
     };
-// eslint-disable-next-line react-hooks/exhaustive-deps
+
     useEffect(() => {
         if (baustellen.length > 0) {
             fetchBaustelleItems(baustellen[0].id);
             fetchTimeEntries(baustellen[0].id);
         }
     }, [baustellen]);
-// eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         if (user) {
             fetchBaustellen();
-        }
+        }// eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
-// eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         if (user && selectedCategory) {
             fetchItemsForCategory(selectedCategory);
-        }
+        }// eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user, selectedCategory]);
 
 
