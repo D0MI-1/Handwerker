@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState} from 'react';
 import '../styles/components/Baustelle.css';
 import { FaPlus, FaTrash, FaCopy, FaPaste, FaEdit, FaFileInvoiceDollar   } from 'react-icons/fa';
 import AddItemToBaustellePopup from "./AddItemToBaustellePopup";
@@ -33,6 +33,35 @@ const Baustelle = ({
     const [isEditingBaustelle, setIsEditingBaustelle] = useState(false);
     const [isDeletingBaustelle, setIsDeletingBaustelle] = useState(false);
 
+    //USE THIS IF U NEED THE UUID OF UR CONTACTS
+    /*useEffect(() => {
+        fetchContacts();
+    }, []);
+
+    const fetchContacts = async () => {
+        const WORKER_URL = 'https://delicate-rain-e5ee.dominik-urban1.workers.dev';
+        let allContacts = [];
+        let page = 0;
+        let hasMore = true;
+
+        try {
+            while (hasMore) {
+                const response = await axios.get(`${WORKER_URL}/contacts`, {
+                    params: { page: page, size: 100 } // Request 100 contacts per page
+                });
+
+                const { content, last } = response.data;
+                allContacts = allContacts.concat(content);
+                hasMore = !last;
+                page++;
+            }
+
+            console.log('All contacts:', allContacts);
+            console.log('Total number of contacts:', allContacts.length);
+        } catch (error) {
+            console.error('Error fetching contacts:', error);
+        }
+    };*/
 
     const handleAddItem = () => {
         setIsAddingItem(true);
@@ -236,7 +265,8 @@ const Baustelle = ({
     };
 
     const createLexofficeBill = async (sendImmediately = false) => {
-        const WORKER_URL = 'https://delicate-rain-e5ee.dominik-urban1.workers.dev/';
+        const WORKER_URL = process.env.REACT_APP_WORKER_URL;
+
 
         //const LEXOFFICE_API_KEY = process.env.REACT_APP_LEXOFFICE_API_KEY;
         //const LEXOFFICE_API_URL = 'https://api.lexoffice.io/v1/invoices';
@@ -248,7 +278,7 @@ const Baustelle = ({
 
         let remarkText = "Bei Fragen stehen wir Ihnen gerne zur Verfügung.";
         let tax = true;
-        if (name.substring(0, 2).toUpperCase() === "EP") {
+        if (name.substring(0, 2).toUpperCase() === "BV") {
             remarkText = "Bei den oben genannten Leistungen handelt es sich um Bauleistungen im Sinne § 13b UStG. Es liegt eine Steuerschuldnerschaft des Leistungsempfängers vor.";
             tax = false;
         }
@@ -265,6 +295,8 @@ const Baustelle = ({
         // Helper function to add Bauarbeiten items only if hours > 0
         const addBauarbeitenItem = (hours, position) => {
             if (hours > 0) {
+                const netAmount = parseFloat(stundenrate);
+                const grossAmount = parseFloat((netAmount * (1 + taxRate / 100)).toFixed(4));
                 lineItems.push({
                     type: "custom",
                     name: "Bauarbeiten",
@@ -273,16 +305,36 @@ const Baustelle = ({
                     unitName: "Stunden",
                     unitPrice: {
                         currency: "EUR",
-                        netAmount: stundenrate,
-                        grossAmount: stundenrate * (1 + taxRate / 100),
+                        netAmount: netAmount,
+                        grossAmount: grossAmount,
                         taxRatePercentage: taxRate
                     }
                 });
             }
         };
 
-        // Add Bauarbeiten items only if they have non-zero hours
-        addBauarbeitenItem(polierHours, "Baustellenleiter (Polier)");
+        const addPolierItem = (hours, position) => {
+            if (hours > 0) {
+                const netAmount = parseFloat(stundenrate);
+                const grossAmount = parseFloat((netAmount * (1 + taxRate / 100)).toFixed(4));
+                lineItems.push({
+                    type: "custom",
+                    name: "Bauarbeiten",
+                    description: `Baustellenleiterstunden (Polier)  ${hours} Stunden zu ${stundenrate},-€ pro Stunde\n\nZeitraum: ${formatDate(startDate)} bis ${formatDate(endDate)}`,
+                    quantity: hours,
+                    unitName: "Stunden",
+                    unitPrice: {
+                        currency: "EUR",
+                        netAmount: netAmount,
+                        grossAmount: grossAmount,
+                        taxRatePercentage: taxRate
+                    }
+                });
+            }
+        };
+
+            // Add Bauarbeiten items only if they have non-zero hours
+        addPolierItem(polierHours, "Baustellenleiter (Polier)");
         addBauarbeitenItem(baustellenleiterHours, "Baustellenleiter");
         addBauarbeitenItem(facharbeiterHours, "Facharbeiter");
 
@@ -296,7 +348,7 @@ const Baustelle = ({
                 unitPrice: {
                     currency: "EUR",
                     netAmount: totalHours * fahrzeugrate,
-                    grossAmount: totalHours * fahrzeugrate * (1 + taxRate / 100),
+                    grossAmount: parseFloat((totalHours * fahrzeugrate * (1 + taxRate / 100)).toFixed(4)),
                     taxRatePercentage: taxRate
                 }
             },
@@ -309,37 +361,50 @@ const Baustelle = ({
                 unitPrice: {
                     currency: "EUR",
                     netAmount: totalHours * maschinenrate,
-                    grossAmount: totalHours * maschinenrate * (1 + taxRate / 100),
+                    grossAmount: parseFloat((totalHours * maschinenrate * (1 + taxRate / 100)).toFixed(4)),
                     taxRatePercentage: taxRate
                 }
             });
+        //fetchContacts();
+        const totalNetAmount = parseFloat(lineItems.reduce((total, item) => total + item.quantity * item.unitPrice.netAmount, 0).toFixed(4));
+        const totalGrossAmount = parseFloat(lineItems.reduce((total, item) => total + item.quantity * item.unitPrice.grossAmount, 0).toFixed(4));
 
-        const totalNetAmount = lineItems.reduce((total, item) => total + item.quantity * item.unitPrice.netAmount, 0);
-        const totalGrossAmount = lineItems.reduce((total, item) => total + item.quantity * item.unitPrice.grossAmount, 0);
+        const date = new Date();
+        const formattedDate = date.toISOString().split('T')[0];
+        const timePart = "T00:00:07.480+02:00"; // Customize as needed
+        const finalDate = formattedDate + timePart;
+
 
         try {
             const invoiceData = {
-                voucherDate: new Date().toISOString().split('T')[0],
+                voucherDate: finalDate,
                 address: {
-                    name: "Customer Name", // Replace with actual customer name
-                    contactId: "10000" // Replace with actual customer contact ID if available
+                    street: process.env.REACT_APP_STREET,
+                    zip: process.env.REACT_APP_ZIP ,
+                    city: process.env.REACT_APP_CITY,
+                    name: process.env.REACT_APP_NAME,
+                    countryCode: process.env.REACT_APP_COUNTRY_CODE,
+                    contactId: process.env.REACT_APP_CONTACTID // Replace with actual customer contact ID if available
                 },
                 lineItems: lineItems,
                 totalPrice: {
                     currency: "EUR",
                     totalNetAmount: totalNetAmount,
                     totalGrossAmount: totalGrossAmount,
-                    totalTaxAmount: totalGrossAmount - totalNetAmount
+                    totalTaxAmount: parseFloat((totalGrossAmount - totalNetAmount).toFixed(4))
                 },
                 taxConditions: {
                     taxType: tax ? "net" : "vatfree"
                 },
                 paymentConditions: {
-                    paymentTermLabel: "Zahlbar innerhalb von 14 Tagen",
-                    paymentTermDuration: 14
+                    paymentTermLabel: "Zahlbar innerhalb von 7 Tagen",
+                    paymentTermDuration: 7
                 },
-                title: `Rechnung für Objekt: ${name}`,
-                introduction: "Sehr geehrte Damen und Herren\n\nwir erlauben uns, wie folgt Rechnung zu stellen:",
+                shippingConditions: {
+                    shippingType: "none"
+                },
+                title: `Rechnung`,
+                introduction: `Sehr geehrte Damen und Herren\n\nwir erlauben uns, wie folgt Rechnung zu stellen: \n\nObjekt: ${name}`,
                 remark: remarkText,
                 customFields: [
                     // Add any custom fields here if needed
@@ -364,7 +429,7 @@ const Baustelle = ({
 
                 if (finalizeResponse.status === 204) {
                     console.log('Invoice finalized and sent successfully');
-                } 
+                }
             }
         } catch (error) {
             console.error('Error creating or sending invoice:', error);
