@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import '../styles/components/AddItemPopup.css';
-import {GiGearHammer} from "react-icons/gi";
-import {FaBoxes, FaTruck} from "react-icons/fa";
+
 
 const AddItemPopup = ({ selectedCategory, onClose, onConfirm }) => {
     const categoryInputFields = {
