@@ -161,3 +161,14 @@ Category items
 .item:hover {
     background-color: #3a3a3a;
 }
+
+.delete-icon-sidebar-item {
+    top: 5px;
+    right: 5px;
+    cursor: pointer;
+    color: #ff4444;
+}
+
+.delete-icon:hover {
+    color: #ff0000;
+}

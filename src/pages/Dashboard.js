@@ -243,6 +243,16 @@ const Dashboard = () => {
         }
     };
 
+    const handleDeleteItem = async (category, item) => {
+        try {
+        const  itemRef = doc(db, `users/${user.uid}/categories/${category}/items`, item.id);
+        await deleteDoc(itemRef);
+        fetchItemsForCategory(category);
+        } catch (error) {
+            console.error("Error deleting item:", error);
+        }
+    };
+
     /*const updateTimeEntry = async (baustelleId, updatedEntry) => {
         try {
             const baustelleRef = doc(db, `users/${user.uid}/baustellen`, baustelleId);
@@ -293,6 +303,7 @@ const Dashboard = () => {
                 items={items}
                 addItem={addItem}
                 updateItem={updateItem}
+                deleteItem={handleDeleteItem}
             />
             <div className="main-content">
                 <h1>Mauerwerk Dashboard</h1>

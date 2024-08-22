@@ -3,6 +3,7 @@ import { FaUsers, FaCogs, FaTruck, FaBoxes, FaPlus, FaTrash   } from 'react-icon
 import {GiGearHammer} from 'react-icons/gi';
 import AddItemPopup from './AddItemPopup';
 import EditItemPopup from './EditItemPopup';
+import DeleteItemConfirmation from './DeleteItemConfirmation';
 
 const categoryIcons = {
     People: FaUsers,
@@ -11,12 +12,14 @@ const categoryIcons = {
     Material: FaBoxes
 };
 
-const Sidebar = ({ categories, selectedCategory, setSelectedCategory, items, addItem, updateItem}) => {
+const Sidebar = ({ categories, selectedCategory, setSelectedCategory, items, addItem, updateItem, deleteItem }) => {
     const [hoveredCategory, setHoveredCategory] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
+    const [hoveredItem, setHoveredItem] = useState(null);
+    const [deletingItem, setDeletingItem] = useState(null);
 
     const handleAddItem = () => {
         setIsPopupOpen(true);
@@ -45,6 +48,22 @@ const Sidebar = ({ categories, selectedCategory, setSelectedCategory, items, add
         updateItem(selectedCategory, updatedItem);
         setIsEditPopupOpen(false);
         setEditingItem(null);
+    };
+
+    const handleDeleteClick = (e, item) => {
+        e.stopPropagation();
+        setDeletingItem(item);
+    };
+
+    const handleDeleteConfirm = () => {
+        if (deletingItem) {
+            deleteItem(selectedCategory, deletingItem);
+            setDeletingItem(null);
+        }
+    };
+
+    const handleDeleteCancel = () => {
+        setDeletingItem(null);
     };
 
     const filteredItems = items.filter(item =>
@@ -98,7 +117,13 @@ const Sidebar = ({ categories, selectedCategory, setSelectedCategory, items, add
 
                 <div className="category-items">
                     {filteredItems.map((item, index) => (
-                        <div key={index} className="item" onClick={() => handleItemClick(item)}>
+                        <div
+                            key={index}
+                            className="item"
+                            onClick={() => handleItemClick(item)}
+                            onMouseEnter={() => setHoveredItem(item)}
+                            onMouseLeave={() => setHoveredItem(null)}
+                        >
                             {selectedCategory === 'People' && (
                                 <>
                                     Name: {item.name} <br/>
@@ -123,6 +148,12 @@ const Sidebar = ({ categories, selectedCategory, setSelectedCategory, items, add
                                     Typ: {item.typ} <br />
                                 </>
                             )}
+                            {hoveredItem === item &&(
+                                <FaTrash
+                                    className={"delete-icon-sidebar-item"}
+                                    onClick={(e) => handleDeleteClick(e, item)}
+                                />
+                            )}
                         </div>
                     ))}
                 </div>
@@ -140,6 +171,14 @@ const Sidebar = ({ categories, selectedCategory, setSelectedCategory, items, add
                     item={editingItem}
                     onClose={handleEditPopupClose}
                     onConfirm={handleEditPopupConfirm}
+                />
+            )}
+            {deletingItem && (
+                <DeleteItemConfirmation
+                    item={deletingItem}
+                    category={selectedCategory}
+                    onConfirm={handleDeleteConfirm}
+                    onCancel={handleDeleteCancel}
                 />
             )}
         </div>
