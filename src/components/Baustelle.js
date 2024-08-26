@@ -266,10 +266,14 @@ const Baustelle = ({
     };
 
     const createLexofficeBill = async (sendImmediately = false) => {
-        if (useruid !== process.env.REACT_APP_LEXOFFICE_USERID){
-            console.log('Sorry but you are not the allowed user to use the API');
+        const authorizedUserId = process.env.REACT_APP_LEXOFFICE_USERID;
 
+        if (useruid !== authorizedUserId) {
+            console.error('Unauthorized user attempted to create a Lexoffice bill');
+            alert('You are not authorized to create Lexoffice bills.');
+            return;
         }
+
         const WORKER_URL = process.env.REACT_APP_WORKER_URL;
 
 
