@@ -33,7 +33,7 @@ const Signup = () => {
     return (
         <AuthWrapper>
 
-        <div className="signup-container">
+        <div className="login-container">
             <h1>Sign Up for Mauerwerk</h1>
             <form onSubmit={handleSignup}>
                 <input
