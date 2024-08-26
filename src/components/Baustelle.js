@@ -8,6 +8,7 @@ import EditBaustellePopup from "./EditBaustellePopup";
 import axios from 'axios';
 
 const Baustelle = ({
+                        useruid,
                        id,
                        name,
                        startDate,
@@ -265,6 +266,10 @@ const Baustelle = ({
     };
 
     const createLexofficeBill = async (sendImmediately = false) => {
+        if (useruid !== process.env.REACT_APP_LEXOFFICE_USERID){
+            console.log('Sorry but you are not the allowed user to use the API');
+
+        }
         const WORKER_URL = process.env.REACT_APP_WORKER_URL;
 
 

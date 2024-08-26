@@ -286,6 +286,7 @@ const Dashboard = () => {
                 <div className="baustellen-container">
                     {baustellen.map(baustelle => (
                         <Baustelle
+                            useruid ={user.uid}
                             key={baustelle.id}
                             id={baustelle.id}
                             name={baustelle.name}
