@@ -172,3 +172,25 @@ Category items
 .delete-icon:hover {
     color: #ff0000;
 }
+
+.dashboard-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.sort-button {
+    color: #1a1a1a;
+    background-color: #F9D949;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.sort-button:hover {
+    background-color: #f0c000;
+}

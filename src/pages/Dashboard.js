@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, addDoc, updateDoc, doc, getDoc, deleteDoc  } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, doc, getDoc, deleteDoc, query, orderBy   } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db } from '../firebase/firebase';
 import Sidebar from '../components/Sidebar';
@@ -24,6 +24,9 @@ const Dashboard = () => {
     const [, setBaustelleItems] = useState([]);
     //_timeEntries
     const [, setTimeEntries] = useState([]);
+
+    const [sortOrder, setSortOrder] = useState('desc');
+
 
     const fetchBaustelleItems = async () => {
         // Fetch items associated with this Baustelle
@@ -57,7 +60,7 @@ const Dashboard = () => {
         if (user) {
             fetchBaustellen();
         }// eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user]);
+    }, [user, sortOrder]);
     useEffect(() => {
         if (user && selectedCategory) {
             fetchItemsForCategory(selectedCategory);
@@ -80,6 +83,7 @@ const Dashboard = () => {
     const fetchBaustellen = async () => {
         try {
             const baustellenCollectionRef = collection(db, `users/${user.uid}/baustellen`);
+            const baustellenQuery = query(baustellenCollectionRef, orderBy('startDate', sortOrder));
             const snapshot = await getDocs(baustellenCollectionRef);
             const baustellenData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setBaustellen(baustellenData);
@@ -269,6 +273,10 @@ const Dashboard = () => {
         }));
     };*/
 
+    const toggleSortOrder = () => {
+        setSortOrder(prevOrder => prevOrder === 'desc' ? 'asc' : 'desc');
+    };
+
     return (
         <div className="dashboard">
             <Sidebar
@@ -282,11 +290,16 @@ const Dashboard = () => {
             />
             <div className="main-content">
                 <h1>Mauerwerk Dashboard</h1>
-                <AddBaustelleButton onClick={() => setIsAddBaustellePopupOpen(true)} />
+                <div className="dashboard-controls">
+                    <AddBaustelleButton onClick={() => setIsAddBaustellePopupOpen(true)}/>
+                    <button className="sort-button" onClick={toggleSortOrder}>
+                        Sort {sortOrder === 'desc' ? '↓' : '↑'}
+                    </button>
+                </div>
                 <div className="baustellen-container">
                     {baustellen.map(baustelle => (
                         <Baustelle
-                            useruid ={user.uid}
+                            useruid={user.uid}
                             key={baustelle.id}
                             id={baustelle.id}
                             name={baustelle.name}
