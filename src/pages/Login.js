@@ -42,9 +42,9 @@ const Login = () => {
                 />
                 <button type="submit" className="login-button">Login</button>
             </form>
-            <button className="forgot-password-button" onClick={() => navigate('/forgot-password')}>
+            <Link to="/forgot-password" className="forgot-password-link">
                 Forgot password?
-            </button>
+            </Link>
             <Link to="/signup">
                 <button className="signup-button">sign up</button>
             </Link>
