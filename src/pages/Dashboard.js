@@ -84,7 +84,7 @@ const Dashboard = () => {
         try {
             const baustellenCollectionRef = collection(db, `users/${user.uid}/baustellen`);
             const baustellenQuery = query(baustellenCollectionRef, orderBy('startDate', sortOrder));
-            const snapshot = await getDocs(baustellenCollectionRef);
+            const snapshot = await getDocs(baustellenQuery);
             const baustellenData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setBaustellen(baustellenData);
         } catch (error) {
